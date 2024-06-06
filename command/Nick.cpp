@@ -1,0 +1,70 @@
+#include <string>
+#include <map>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <iostream>
+#include <unistd.h>
+#include <cstdlib> 
+#include <cstring>
+#include <arpa/inet.h>
+#include <poll.h>
+#include <vector>
+#include "../client.hpp"
+#include "../channel.hpp"
+
+int check_if_already_exists(std::string &username, std::map<int, Client> &clients)
+{
+    for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it) {
+        if (it->second.username.compare(username) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+void nick_execute(std::vector<std::string> &params, int client_fd, std::map<int, Client> &clients, std::map<std::string, Channel> &channels)
+{
+    if (params.empty())
+    {
+        const char *response = ":monserver 431 * :No nickname given\r\n";
+        send(client_fd, response, strlen(response), 0);
+        return;
+    }
+
+    if (!check_if_already_exists(params[0], clients))
+    {
+        std::string nickname = params[0];
+        if (nickname[0] == '#' || nickname[0] == ':' || nickname.find(' ') != std::string::npos)
+        {
+            const char *response = ":monserver 432 * :Erroneous nickname\r\n";
+            send(client_fd, response, strlen(response), 0);
+            return;
+        }
+        if (!clients[client_fd].username.empty()) {
+            std::string nick_change_msg = ":" + clients[client_fd].username + "!new_nick@" + "monserver" + " NICK :" + params[0] + "\r\n";
+            send(client_fd, nick_change_msg.c_str(), nick_change_msg.length(), 0);
+        }
+        // parcours map chanel et change le nom de l'opérateur
+        for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
+        {
+            for (std::vector<std::string>::iterator it2 = it->second.operators.begin(); it2 != it->second.operators.end(); ++it2)
+            {
+                if (it2->compare(clients[client_fd].username) == 0)
+                {
+                    *it2 = params[0];
+                }
+            }
+        }
+        clients[client_fd].set_username(params[0]);
+        // Change all the operator names in the channels
+    } 
+    else
+    {
+        const char *response = ":monserver 433 * :Nickname is already in use\r\n";
+        send(client_fd, response, strlen(response), 0);
+    }
+}
+
+
+
