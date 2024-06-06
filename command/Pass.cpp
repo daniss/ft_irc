@@ -14,7 +14,7 @@
 
 void pass_execute(std::vector<std::string> &params, int client_fd, std::map<int, Client> &clients, std::string &password)
 {
-    if (clients[client_fd].is_authenticated) {
+    if (clients[client_fd].get_is_authenticated()) {
         const char *response = ":monserver 462 * :You may not reregister\r\n";
         send(client_fd, response, strlen(response), 0);
         return;
@@ -28,7 +28,7 @@ void pass_execute(std::vector<std::string> &params, int client_fd, std::map<int,
     params[0].erase(params[0].find_last_not_of(" \n\r\t") + 1);
     if (!params.empty() && params[0] == password)
     {
-        clients[client_fd].is_authenticated = true;
+        clients[client_fd].set_is_authenticated(true);
     }
     else
     {

@@ -4,7 +4,7 @@ void broadcast_privmsg_to_channel(const std::string &message, const std::string 
 {
 
     if (!is_in_channel(channel, clients, client_fd)) {
-        std::string response = ":monserver 442 " + clients[client_fd].username + " " + channel + " :You're not on that channel\r\n";
+        std::string response = ":monserver 442 " + clients[client_fd].get_username() + " " + channel + " :You're not on that channel\r\n";
         std::cout << response << std::endl;
         send(client_fd, response.c_str(), response.length(), 0);
         return;
@@ -15,7 +15,7 @@ void broadcast_privmsg_to_channel(const std::string &message, const std::string 
         const Client &other_client = it->second;
 
         if (other_client_fd != client_fd) {
-            for (std::deque<std::string>::const_iterator it2 = other_client.channels.begin(); it2 != other_client.channels.end(); ++it2) {
+            for (std::deque<std::string>::const_iterator it2 = other_client.get_channels().begin(); it2 != other_client.get_channels().end(); ++it2) {
                 if (*it2 == channel) {
                     send(other_client_fd, message.c_str(), message.length(), 0);
                     break;
@@ -29,13 +29,13 @@ void handle_privmsg(int client_fd, std::string &command, std::vector<std::string
 {
     std::cout << "handle_privmsg" << std::endl;
     if (params.size() < 2) {
-        std::string err_msg = ":monserver 461 " + clients[client_fd].username + " PRIVMSG :Not enough parameters\r\n";
+        std::string err_msg = ":monserver 461 " + clients[client_fd].get_username() + " PRIVMSG :Not enough parameters\r\n";
         send(client_fd, err_msg.c_str(), err_msg.length(), 0);
         return;
     }
 
     if (params[0][0] != '#' || params[1][0] != ':') {
-        std::string err_msg = ":monserver 401 " + clients[client_fd].username + " PRIVMSG " + params[0] + " :No such nick/channel\r\n";
+        std::string err_msg = ":monserver 401 " + clients[client_fd].get_username() + " PRIVMSG " + params[0] + " :No such nick/channel\r\n";
         send(client_fd, err_msg.c_str(), err_msg.length(), 0);
         return;
     }
@@ -49,7 +49,7 @@ void handle_privmsg(int client_fd, std::string &command, std::vector<std::string
         message += " " + params[i];
     }
 
-    std::string full_message = ":" + clients[client_fd].username + "!" + clients[client_fd].realname + " PRIVMSG " + target + " :" + message + "\r\n";
+    std::string full_message = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + " PRIVMSG " + target + " :" + message + "\r\n";
 
     if (target[0] == '#') {
         broadcast_privmsg_to_channel(full_message, target, client_fd, clients);
@@ -57,8 +57,8 @@ void handle_privmsg(int client_fd, std::string &command, std::vector<std::string
         // Send a message to the target client
         bool target_found = false;
         for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it) {
-            if (it->second.username == target) {
-                std::cout << "message : " << full_message << " to : " << it->second.username << std::endl;
+            if (it->second.get_username() == target) {
+                std::cout << "message : " << full_message << " to : " << it->second.get_username() << std::endl;
                 send(it->first, full_message.c_str(), full_message.length(), 0);
                 target_found = true;
                 break;
@@ -66,7 +66,7 @@ void handle_privmsg(int client_fd, std::string &command, std::vector<std::string
         }
 
         if (!target_found) {
-            std::string err_msg = ":monserver 401 " + clients[client_fd].username + " " + target + " :No such nick/channel\r\n";
+            std::string err_msg = ":monserver 401 " + clients[client_fd].get_username() + " " + target + " :No such nick/channel\r\n";
             send(client_fd, err_msg.c_str(), err_msg.length(), 0);
         }
     }

@@ -20,6 +20,9 @@ class Server {
 public:
     Server(int port, const std::string& password);
     ~Server();
+    void broadcast_left_message_to_channel(const std::string &message, const std::string &channel, int client_fd);
+    void cleanup_user(int client_fd);
+    void execute_command(const std::string &command, int client_fd, std::vector<std::string> &params, std::string &message);
 
 private:
     void create_server();

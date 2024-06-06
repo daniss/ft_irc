@@ -10,7 +10,6 @@
 #include <poll.h>
 #include <vector>
 
-void execute_command(const std::string &command, int client_fd, std::vector<std::string> &params, std::map<std::string, Channel> &channels, std::map<int, Client> &clients, std::string &password, std::string &message);
 
 Server::Server(int port, const std::string& password) : port(port), password(password) {
     create_server();
@@ -43,7 +42,7 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
                         client_pollfd.revents = 0;
                         fds.push_back(client_pollfd);
                         clients[new_socket] = Client(); // Initialize client
-                        clients[new_socket].client_fd = new_socket;
+                        clients[new_socket].set_client_fd(new_socket);
                         
                     }
                 } else {
@@ -142,13 +141,14 @@ void Server::create_server() {
 void Server::handle_client_message(int client_fd, const std::string& message)
 {
     // Append received data to the client's buffer
-    clients[client_fd].recv_buffer += message;
+    clients[client_fd].set_recv_buffer(clients[client_fd].get_recv_buffer() + message);
     std::cout << "Received: " << message << std::endl;
     size_t pos;
-    while ((pos = clients[client_fd].recv_buffer.find('\n')) != std::string::npos) {
+    while ((pos = clients[client_fd].get_recv_buffer().find('\n')) != std::string::npos) {
         // Extract complete command from the buffer
-        std::string command_line = clients[client_fd].recv_buffer.substr(0, pos);
-        clients[client_fd].recv_buffer.erase(0, pos + 1); // Remove the processed command from the buffer
+        std::string command_line = clients[client_fd].get_recv_buffer().substr(0, pos);
+        //[client_fd].recv_buffer.erase(0, pos + 1); // Remove the processed command from the buffer
+        clients[client_fd].erase_recv_buffer(pos + 1); // Remove the processed command from the buffer
 
         // Parse the command and parameters
         std::string command;
@@ -177,20 +177,20 @@ void Server::handle_client_message(int client_fd, const std::string& message)
         }
 
         // Execute the command
-        if (!clients[client_fd].username.empty() && !clients[client_fd].realname.empty() && clients[client_fd].is_authenticated) {
-            clients[client_fd].is_registered = true;
+        if (!clients[client_fd].get_username().empty() && !clients[client_fd].get_realname().empty() && clients[client_fd].get_is_authenticated()) {
+            clients[client_fd].set_is_registered(true);
         }
         std::cout << "command : " << command << std::endl;
-        execute_command(command, client_fd, params, this->channels, this->clients, this->password, command_line);
+        execute_command(command, client_fd, params, command_line);
     }
 }
 
 
-void broadcast_left_message_to_channel(const std::string &message, const std::string &channel, int client_fd, std::map<int, Client> &clients)
+void Server::broadcast_left_message_to_channel(const std::string &message, const std::string &channel, int client_fd)
 {
     for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
     {
-        for (std::deque<std::string>::iterator it2 = it->second.channels.begin(); it2 != it->second.channels.end(); ++it2)
+        for (std::deque<std::string>::iterator it2 = it->second.get_channels().begin(); it2 != it->second.get_channels().end(); ++it2)
         {
             if (it2->compare(channel) == 0 && it->first != client_fd)
                 send(it->first, message.c_str(), message.length(), 0);
@@ -198,13 +198,14 @@ void broadcast_left_message_to_channel(const std::string &message, const std::st
     }
 }
 
-void cleanup_user(int client_fd, std::map<int, Client> &clients, std::map<std::string, Channel> &channels)
+void Server::cleanup_user(int client_fd)
 {
-    for (std::deque<std::string>::iterator it = clients[client_fd].channels.begin(); it != clients[client_fd].channels.end(); ++it)
+    for (std::deque<std::string>::iterator it = clients[client_fd].get_channels().begin(); it != clients[client_fd].get_channels().end(); ++it)
     {
-        std::string part_msg = ":" + clients[client_fd].username + "!" + clients[client_fd].realname + " PART :" + *it + "\r\n";
-        broadcast_left_message_to_channel(part_msg, *it, client_fd, clients);
-        if (channels[*it].users.empty()) {
+        std::string part_msg = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + " PART :" + *it + "\r\n";
+        broadcast_left_message_to_channel(part_msg, *it, client_fd);
+        if (channels[*it].getUsers().empty()) 
+        {
             channels.erase(*it);
         }
     }
@@ -214,77 +215,108 @@ void cleanup_user(int client_fd, std::map<int, Client> &clients, std::map<std::s
 
 
 
-void execute_command(const std::string &command, int client_fd, std::vector<std::string> &params, std::map<std::string, Channel> &channels, std::map<int, Client> &clients, std::string &password, std::string &message)
+void Server::execute_command(const std::string &command, int client_fd, std::vector<std::string> &params, std::string &message)
 {
     std::string command_upper = command;
     command_upper.erase(command_upper.find_last_not_of(" \n\r\t") + 1);
     if (command_upper == "PASS") {
-        pass_execute(params, client_fd, clients, password);
+        pass_execute(params, client_fd, this->clients, this->password);
     } else if (command_upper == "NICK") {
-        nick_execute(params, client_fd, clients, channels);
+        nick_execute(params, client_fd, this->clients, this->channels);
     } else if (command_upper == "USER") {
-        user_execute(params, client_fd, clients);
-    } else if (clients[client_fd].is_registered == false && command_upper != "CAP LS 302") {
+        user_execute(params, client_fd, this->clients);
+    } else if (clients[client_fd].get_is_registered() == false && command_upper != "CAP LS 302") {
         const char *response = ":monserver 451 * :You have not registered\r\n";
+        std::cout << "command : " << command_upper << std::endl;
         send(client_fd, response, strlen(response), 0);
     }
     else if (command_upper == "JOIN") {
+        // size_t pos = 0;
+        // std::string token;
+        // std::string delimiter = ",";
+        // int in = 0;
+        // while ((pos = params[0].find(delimiter)) != std::string::npos) {
+        //     token = params[0].substr(0, pos);
+        //     std::vector<std::string> true_params;
+        //     true_params.push_back(token);
+        //     if (params.size() == 2)
+        //     {
+        //         size_t pos2 = params[1].find(delimiter);
+        //         std::string token2 = params[1].substr(0, pos2);
+        //         true_params.push_back(token2);
+        //         join_execute(client_fd, true_params, this->channels, this->clients);
+        //         if (pos2 != std::string::npos)
+        //         {
+        //             params[1].erase(0, pos2 + delimiter.length());
+        //         }
+        //         else {
+        //             params.erase(params.begin() + 1);
+        //         }
+
+        //     }
+        //     else {
+        //         if (params.size() > 1) {
+        //             params.erase(params.begin() + 1);
+        //         }
+        //         join_execute(client_fd, true_params, this->channels, this->clients);
+        //     }
+        //     params[0].erase(0, pos + delimiter.length());
+        //     in = 1;
+        // }
+        // if (params.size() > 1 && in == 1)
+        // {
+        //         params.erase(params.begin() + 1);
+        // }
+        // create a map with the name of the channel to join and the password where param[0] is the name of the channel and param[1] is the password
+        std::map<std::string, std::string> channels_to_join;
         size_t pos = 0;
         std::string token;
         std::string delimiter = ",";
-        int in = 0;
         while ((pos = params[0].find(delimiter)) != std::string::npos) {
             token = params[0].substr(0, pos);
-            std::vector<std::string> true_params;
-            true_params.push_back(token);
-            if (params.size() == 2)
-            {
-                size_t pos2 = params[1].find(delimiter);
-                std::string token2 = params[1].substr(0, pos2);
-                true_params.push_back(token2);
-                join_execute(client_fd, true_params, channels, clients);
-                if (pos2 != std::string::npos)
-                {
-                    params[1].erase(0, pos2 + delimiter.length());
-                }
-                else {
+            std::string password;
+            if (params.size() == 2) {
+                password = params[1].substr(0, params[1].find(delimiter));
+                if (params[1].find(delimiter) != std::string::npos)
+                    params[1].erase(0, params[1].find(delimiter) + delimiter.length());
+                else
                     params.erase(params.begin() + 1);
-                }
-
             }
             else {
-                if (params.size() > 1) {
-                    params.erase(params.begin() + 1);
-                }
-                join_execute(client_fd, true_params, channels, clients);
+                password = "";
             }
+            channels_to_join[token] = password;
             params[0].erase(0, pos + delimiter.length());
-            in = 1;
         }
-        if (params.size() > 1 && in == 1)
-        {
-                params.erase(params.begin() + 1);
+        channels_to_join[params[0]] = params.size() == 2 ? params[1] : "";
+        for (std::map<std::string, std::string>::iterator it = channels_to_join.begin(); it != channels_to_join.end(); ++it) {
+            std::vector<std::string> true_params;
+            true_params.push_back(it->first);
+            if (it->second != "") {
+                true_params.push_back(it->second);
+            }
+            join_execute(client_fd, true_params, this->channels, this->clients);
+            true_params.clear();
         }
-        join_execute(client_fd, params, channels, clients);
 
     } else if (command_upper == "PING") {
         ping_execute(params, client_fd, message);
     } else if (command_upper == "QUIT") {
-        cleanup_user(client_fd, clients, channels);
+        cleanup_user(client_fd);
         close(client_fd);
         clients.erase(client_fd);
     } else if (command_upper == "PRIVMSG") {
-        handle_privmsg(client_fd, command_upper, params, clients);
+        handle_privmsg(client_fd, command_upper, params, this->clients);
     } else if (command_upper == "PART") {
-        part_execute(params, client_fd, clients, channels);
+        part_execute(params, client_fd, this->clients, this->channels);
     } else if (command_upper == "KICK") {
-        execute_kick(params, client_fd, clients, channels);
+        execute_kick(params, client_fd, this->clients, this->channels);
     } else if (command_upper == "INVITE") {
-        invite_execute(params, client_fd, clients, channels);
+        invite_execute(params, client_fd, this->clients, this->channels);
     } else if (command_upper == "TOPIC") {
-        execute_topic(client_fd, params, clients, channels);
+        execute_topic(client_fd, params, this->clients, this->channels);
     } else if (command_upper == "MODE") {
-        handle_mode_command(client_fd, params, channels, clients);
+        handle_mode_command(client_fd, params, this->channels, this->clients);
     }
     else {
         std::cerr << "Unknown command : " << command_upper << std::endl;

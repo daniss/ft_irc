@@ -15,7 +15,7 @@
 int check_if_already_exists(std::string &username, std::map<int, Client> &clients)
 {
     for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it) {
-        if (it->second.username.compare(username) == 0) {
+        if (it->second.get_username().compare(username) == 0) {
             return 1;
         }
     }
@@ -41,16 +41,16 @@ void nick_execute(std::vector<std::string> &params, int client_fd, std::map<int,
             send(client_fd, response, strlen(response), 0);
             return;
         }
-        if (!clients[client_fd].username.empty()) {
-            std::string nick_change_msg = ":" + clients[client_fd].username + "!new_nick@" + "monserver" + " NICK :" + params[0] + "\r\n";
+        if (!clients[client_fd].get_username().empty()) {
+            std::string nick_change_msg = ":" + clients[client_fd].get_username() + "!new_nick@" + "monserver" + " NICK :" + params[0] + "\r\n";
             send(client_fd, nick_change_msg.c_str(), nick_change_msg.length(), 0);
         }
         // parcours map chanel et change le nom de l'opérateur
         for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
         {
-            for (std::vector<std::string>::iterator it2 = it->second.operators.begin(); it2 != it->second.operators.end(); ++it2)
+            for (std::vector<std::string>::iterator it2 = it->second.getOperators().begin(); it2 != it->second.getOperators().end(); ++it2)
             {
-                if (it2->compare(clients[client_fd].username) == 0)
+                if (it2->compare(clients[client_fd].get_username()) == 0)
                 {
                     *it2 = params[0];
                 }

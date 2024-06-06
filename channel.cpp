@@ -12,10 +12,73 @@ Channel::Channel()
     user_limit = 0;
 }
 
-int Channel::new_message(std::string username, std::string message)
+Channel::~Channel()
 {
-    //db.messages.push_back(username + ": " + message + "\n");
-    std::cout << "Message " << message << " added to channel " << chan_name << std::endl;
-    return 0;
 }
 
+// Getters
+std::vector<std::string> Channel::getOperators() const {
+    return operators;
+}
+
+std::string Channel::getChannelName() const {
+    return chan_name;
+}
+
+std::string Channel::getKey() const {
+    return key;
+}
+
+std::string Channel::getTopic() const {
+    return topic;
+}
+
+std::vector<std::string> Channel::getUsers() const {
+    return users;
+}
+
+std::map<std::string, bool> Channel::getUserModes() const {
+    return user_modes;
+}
+
+size_t Channel::getUserLimit() const {
+    return user_limit;
+}
+
+// Setters
+void Channel::addOperator(const std::string& op) {
+    operators.push_back(op);
+}
+
+void Channel::eraseOperator(const std::string& op) {
+    for (std::vector<std::string>::iterator it = operators.begin(); it != operators.end(); ++it) {
+        if (*it == op) {
+            operators.erase(it);
+            break;
+        }
+    }
+}
+
+void Channel::setChannelName(const std::string& name) {
+    chan_name = name;
+}
+
+void Channel::setKey(const std::string& key) {
+    this->key = key;
+}
+
+void Channel::setTopic(const std::string& topic) {
+    this->topic = topic;
+}
+
+void Channel::setUsers(const std::vector<std::string>& users) {
+    this->users = users;
+}
+
+void Channel::addUsermode(const std::string& mode, bool value) {
+    user_modes[mode] = value;
+}
+
+void Channel::setUserLimit(size_t limit) {
+    user_limit = limit;
+}

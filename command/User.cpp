@@ -3,7 +3,7 @@
 
 void user_execute(std::vector<std::string> &params, int client_fd, std::map<int, Client> &clients)
 {
-    if (clients[client_fd].is_registered)
+    if (clients[client_fd].get_is_registered())
     {
         const char *response = ":monserver 462 * :You may not reregister\r\n";
         send(client_fd, response, strlen(response), 0);
@@ -17,8 +17,8 @@ void user_execute(std::vector<std::string> &params, int client_fd, std::map<int,
         }
         clients[client_fd].set_username(params[0]);
         clients[client_fd].set_realname(realname);
-        if (clients[client_fd].is_authenticated && !clients[client_fd].username.empty()) {
-            std::string welcome = ":monserver 001 " + clients[client_fd].username + " :Welcome to the IRC Server\r\n";
+        if (clients[client_fd].get_is_authenticated() && !clients[client_fd].get_username().empty()) {
+            std::string welcome = ":monserver 001 " + clients[client_fd].get_username() + " :Welcome to the IRC Server\r\n";
             std::cout << "welcome message sent" << std::endl;
             send(client_fd, welcome.c_str(), welcome.length(), 0);
         }

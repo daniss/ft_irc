@@ -19,6 +19,7 @@ void part_execute(std::vector<std::string> &params, int client_fd, std::map<int,
 void execute_kick(std::vector<std::string> &params, int client_fd, std::map<int, Client> &clients, std::map<std::string, Channel> &channels);
 void invite_execute(std::vector<std::string> &params, int fd, std::map<int, Client> &clients, std::map<std::string, Channel> &channels);
 void handle_mode_command(int client_fd, const std::vector<std::string>& params, std::map<std::string, Channel>& channels, std::map<int, Client>& clients);
+int find_fd_username(std::string &username, std::map<int, Client> &clients);
 
 
 #endif
