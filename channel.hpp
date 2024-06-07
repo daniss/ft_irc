@@ -37,7 +37,7 @@ public:
     void setChannelName(const std::string& name);
     void setKey(const std::string& key);
     void setTopic(const std::string& topic);
-    void setUsers(const std::vector<std::string>& users);
+    void addUser(const std::string& name);
     void addUsermode(const std::string& mode, bool value);
     void setUserLimit(size_t limit);
 

@@ -111,6 +111,7 @@ void join_execute(int client_fd, std::vector<std::string> &params, std::map<std:
         std::cout << "Client " << clients[client_fd].get_username() << " joined channel " << channel_name << std::endl;
         // Broadcast the JOIN message to other clients in the channel
         std::string join_msg = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + " JOIN :" + channel_name + "\r\n";
+        channels[channel_name].addUser(clients[client_fd].get_username());
         std::cout << join_msg << std::endl;
         broadcast_message_join_to_channel(join_msg, channel_name, client_fd, clients);
         std::cout << "param.size() : " << params.size() << std::endl;

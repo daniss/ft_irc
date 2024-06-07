@@ -71,8 +71,9 @@ void Channel::setTopic(const std::string& topic) {
     this->topic = topic;
 }
 
-void Channel::setUsers(const std::vector<std::string>& users) {
-    this->users = users;
+void Channel::addUser(const std::string& name)
+{
+    users.push_back(name);
 }
 
 void Channel::addUsermode(const std::string& mode, bool value) {
