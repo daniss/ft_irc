@@ -45,7 +45,8 @@ void join_execute(int client_fd, std::vector<std::string> &params, std::map<std:
         
         if (channels.find(channel_name) != channels.end() && channels[channel_name].getUserModes()["invite_only"] == true)
         {
-            for (std::deque<std::string>::iterator it = clients[client_fd].get_invited_channels().begin(); it != clients[client_fd].get_invited_channels().end(); ++it)
+            std::deque<std::string> invited_channels = clients[client_fd].get_invited_channels();
+            for (std::deque<std::string>::iterator it = invited_channels.begin(); it != invited_channels.end(); ++it)
             {
                 if (it->compare(channel_name) == 0)
                 {

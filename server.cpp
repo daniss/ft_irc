@@ -190,17 +190,19 @@ void Server::broadcast_left_message_to_channel(const std::string &message, const
 {
     for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
     {
-        for (std::deque<std::string>::iterator it2 = it->second.get_channels().begin(); it2 != it->second.get_channels().end(); ++it2)
+        std::deque<std::string> channels = it->second.get_channels();
+        for (std::deque<std::string>::iterator it2 = channels.begin(); it2 != channels.end(); ++it2)
         {
             if (it2->compare(channel) == 0 && it->first != client_fd)
                 send(it->first, message.c_str(), message.length(), 0);
-        } 
+        }
     }
 }
 
 void Server::cleanup_user(int client_fd)
 {
-    for (std::deque<std::string>::iterator it = clients[client_fd].get_channels().begin(); it != clients[client_fd].get_channels().end(); ++it)
+    std::deque<std::string> channels_client = clients[client_fd].get_channels();
+    for (std::deque<std::string>::iterator it = channels_client.begin(); it != channels_client.end(); ++it)
     {
         std::string part_msg = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + " PART :" + *it + "\r\n";
         broadcast_left_message_to_channel(part_msg, *it, client_fd);

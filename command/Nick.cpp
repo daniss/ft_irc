@@ -48,7 +48,8 @@ void nick_execute(std::vector<std::string> &params, int client_fd, std::map<int,
         // parcours map chanel et change le nom de l'opérateur
         for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
         {
-            for (std::vector<std::string>::iterator it2 = it->second.getOperators().begin(); it2 != it->second.getOperators().end(); ++it2)
+            std::vector<std::string> opera = it->second.getOperators();
+            for (std::vector<std::string>::iterator it2 = opera.begin(); it2 != opera.end(); ++it2)
             {
                 if (it2->compare(clients[client_fd].get_username()) == 0)
                 {

@@ -15,7 +15,8 @@ void broadcast_privmsg_to_channel(const std::string &message, const std::string 
         const Client &other_client = it->second;
 
         if (other_client_fd != client_fd) {
-            for (std::deque<std::string>::const_iterator it2 = other_client.get_channels().begin(); it2 != other_client.get_channels().end(); ++it2) {
+            std::deque<std::string> channels = other_client.get_channels();
+            for (std::deque<std::string>::iterator it2 = channels.begin(); it2 != channels.end(); ++it2) {
                 if (*it2 == channel) {
                     send(other_client_fd, message.c_str(), message.length(), 0);
                     break;
