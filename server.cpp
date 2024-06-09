@@ -22,7 +22,7 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
     fds.push_back(server_pollfd);
 
     while (true) {
-        int poll_count = poll(&fds[0], fds.size(), 1000);
+        int poll_count = poll(&fds[0], fds.size(), 0);
         if (poll_count < 0) {
             std::cerr << "Poll Failed" << std::endl;
             break;
@@ -30,11 +30,15 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
 
         for (size_t i = 0; i < fds.size(); ++i) {
             if (fds[i].revents & POLLIN) {
-                if (fds[i].fd == this->server_fd) {
+                if (fds[i].fd == this->server_fd)
+                {
                     int new_socket = accept(this->server_fd, (struct sockaddr *)&this->address, &this->addrlen);
-                    if (new_socket < 0) {
+                    if (new_socket < 0)
+                    {
                         std::cerr << "Accept Failed" << std::endl;
-                    } else {
+                    }
+                    else
+                    {
                         std::cout << "Connection Accepted" << std::endl;
                         pollfd client_pollfd;
                         client_pollfd.fd = new_socket;
@@ -49,29 +53,64 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
                         getpeername(new_socket, (struct sockaddr*)&addr, &addr_len);
                         clients[new_socket].set_hostname(inet_ntoa(addr.sin_addr));
                     }
-                } else {
+                }
+                else
+                {
                     char buffer[1024];
-                    int valread = recv(fds[i].fd, buffer, sizeof(buffer), 0);
-                    
-                    if (valread <= 0) {
-                        if (valread == 0) {
-                            std::cout << "Client disconnected" << std::endl;
+                    //int valread = recv(fds[i].fd, buffer, sizeof(buffer), 0);
+                    int stoped = 0;
+                    std::string received_data;
+                    while (true) {
+                        int valread = recv(fds[i].fd, buffer, 1024, 0);
+                        if (valread <= 0)
+                        {
+                            if (valread == 0) {
+                                std::cout << "Client disconnected" << std::endl;
+                            }
+                            else
+                            {
+                                std::cerr << "Read Failed" << std::endl;
+                            }
+                            close(fds[i].fd);
+                            clients.erase(fds[i].fd); // Remove client from map
+                            fds.erase(fds.begin() + i);
+                            --i;
+                            stoped = 1;
+                            break;
                         } else {
-                            std::cerr << "Read Failed" << std::endl;
+                            buffer[valread] = '\0';
+                            received_data.append(buffer, valread);
+                            if (strlen(buffer) < 1024) {
+                                break;
+                            }
+                            
+                            // Trim the buffer to remove trailing newline
                         }
-                        close(fds[i].fd);
-                        clients.erase(fds[i].fd); // Remove client from map
-                        fds.erase(fds.begin() + i);
-                        --i;
-                    } else {
-                        buffer[valread] = '\0';
+                    }
+                    if (stoped == 1) {
+                        continue;
+                    }
+                    handle_client_message(fds[i].fd, received_data);
+                    
+                    // if (valread <= 0) {
+                    //     if (valread == 0) {
+                    //         std::cout << "Client disconnected" << std::endl;
+                    //     } else {
+                    //         std::cerr << "Read Failed" << std::endl;
+                    //     }
+                    //     close(fds[i].fd);
+                    //     clients.erase(fds[i].fd); // Remove client from map
+                    //     fds.erase(fds.begin() + i);
+                    //     --i;
+                    // } else {
+                    //     buffer[valread] = '\0';
 
-                        // Trim the buffer to remove trailing newline
+                    //     // Trim the buffer to remove trailing newline
 
-                        std::string received_data(buffer);
-                        handle_client_message(fds[i].fd, received_data);
+                    //     std::string received_data(buffer);
+                    //     handle_client_message(fds[i].fd, received_data);
                         
-                        }
+                    //     }
                     }
                 }
             }
