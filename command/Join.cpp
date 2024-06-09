@@ -15,6 +15,7 @@ void broadcast_message_join_to_channel(const std::string &message, const std::st
 {
     for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
     {
+        if (is_in_channel(channel, clients, it->first) == true)
             send(it->first, message.c_str(), message.length(), 0);
     }
 }
@@ -114,12 +115,46 @@ void join_execute(int client_fd, std::vector<std::string> &params, std::map<std:
         channels[channel_name].addUser(clients[client_fd].get_username());
         std::cout << join_msg << std::endl;
         broadcast_message_join_to_channel(join_msg, channel_name, client_fd, clients);
-        std::cout << "param.size() : " << params.size() << std::endl;
+        
         if (channels[channel_name].getTopic().empty() == false)
         {
             std::string topic_msg = ":monserver 332 " + clients[client_fd].get_username() + " " + channel_name + " :" + channels[channel_name].getTopic() + "\r\n";
             send(client_fd, topic_msg.c_str(), topic_msg.length(), 0);
         }
+        if (channels[channel_name].getUsers().size() == 1)
+        {
+            std::vector<std::string> mode_params;
+            mode_params.push_back(channel_name);
+            mode_params.push_back("+o");
+            mode_params.push_back(clients[client_fd].get_username());
+
+            //parcours vector and print
+            for (std::vector<std::string>::iterator it = mode_params.begin(); it != mode_params.end(); ++it)
+            {
+                std::cout << "Params : " << *it << std::endl;
+            }
+
+            handle_mode_command(client_fd, mode_params, channels, clients);
+        }
+        // Send the list of users in the channel
+        std::string response = ":monserver 353 " + clients[client_fd].get_username() + " = " + channel_name + " :";
+        std::vector<std::string> users = channels[channel_name].getUsers();
+        for (std::vector<std::string>::iterator it = users.begin(); it != users.end(); ++it)
+        {
+            if (whois_operator(clients, channel_name, client_fd, channels).compare(clients[client_fd].get_username()) == 0)
+            {
+                response += "@" + *it + " ";
+                std::cout << "Operator : " << *it << std::endl;
+            }
+            else
+            {
+                response += *it + " ";
+            }
+        }
+        response += "\r\n";
+        send(client_fd, response.c_str(), response.length(), 0);
+        response = ":monserver 366 " + clients[client_fd].get_username() + " " + channel_name + " :End of /NAMES list\r\n";
+        send(client_fd, response.c_str(), response.length(), 0);
     }
 
     else {

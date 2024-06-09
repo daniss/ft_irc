@@ -112,3 +112,13 @@ void Client::erase_channel(const std::string &channel)
         }
     }
 }
+
+void Client::set_hostname(const std::string &hostname)
+{
+    this->hostname = hostname;
+}
+
+std::string Client::get_hostname()
+{
+    return hostname;
+}

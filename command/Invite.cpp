@@ -19,13 +19,28 @@ void invite_execute(std::vector<std::string> &params, int fd, std::map<int, Clie
     if (params.size() < 2)
     {
         std::string err_msg = ":monserver 461 " + clients[fd].get_username() + " INVITE :Not enough parameters\r\n";
-        // print param
-        std::cout << "params size : " << params.size() << std::endl;
         send(fd, err_msg.c_str(), err_msg.length(), 0);
         return;
     }
     std::string target = params[0];
     std::string channel = params[1];
+
+    int exist = 0;
+    for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
+    {
+        if (it->first.compare(channel) == 0)
+        {
+            exist = 1;
+            break;
+        }
+    }
+
+    if (exist == 0)
+    {
+        std::string err_msg = ":monserver 403 " + clients[fd].get_username() + " INVITE :No such channel\r\n";
+        send(fd, err_msg.c_str(), err_msg.length(), 0);
+        return;
+    }
 
     if (!is_in_channel(params[1], clients, fd))
     {
@@ -68,23 +83,7 @@ void invite_execute(std::vector<std::string> &params, int fd, std::map<int, Clie
     
     
 
-    int exist = 0;
-    for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
-    {
-        if (it->first.compare(channel) == 0)
-        {
-            exist = 1;
-            break;
-        }
-    }
-
-    if (exist == 0)
-    {
-        std::string err_msg = ":monserver 403 " + clients[fd].get_username() + " INVITE :No such channel\r\n";
-        send(fd, err_msg.c_str(), err_msg.length(), 0);
-        return;
-    }
-
+    
     
     int invited = 0;
     //std::string invite_msg = ":" + clients[fd].username + "!" + clients[fd].realname + " INVITE " + target + " " + channel + "\r\n";
@@ -95,8 +94,8 @@ void invite_execute(std::vector<std::string> &params, int fd, std::map<int, Clie
         if (it->second.get_username().compare(target) == 0)
         {
             it->second.add_invited_channel(channel);
-            send(it->first, msg.c_str(), msg.length(), 0);
-            std::cout << "invite message sent to " << it->second.get_username() << "for the channel " << channel << " by " << clients[fd].get_username() << std::endl;
+            send(fd, msg.c_str(), msg.length(), 0);
+            std::cout << "invite message sent to " << it->second.get_username() << " for the channel " << channel << " by " << clients[fd].get_username() << std::endl;
             return;
         }
     }

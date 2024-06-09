@@ -44,6 +44,10 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
                         clients[new_socket] = Client(); // Initialize client
                         clients[new_socket].set_client_fd(new_socket);
                         
+                        struct sockaddr_in addr;
+                        socklen_t addr_len = sizeof(addr);
+                        getpeername(new_socket, (struct sockaddr*)&addr, &addr_len);
+                        clients[new_socket].set_hostname(inet_ntoa(addr.sin_addr));
                     }
                 } else {
                     char buffer[1024];

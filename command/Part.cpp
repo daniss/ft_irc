@@ -23,12 +23,19 @@ void part_execute(std::vector<std::string> &params, int client_fd, std::map<int,
             // Broadcast the PART message to other clients in the channel
             broadcast_message_to_channel(part_msg, channel_name, client_fd, clients);
 
-            // Send a confirmation to the user who left
-            send(client_fd, part_msg.c_str(), part_msg.length(), 0);
 
             // Remove the client from the channel
             clients[client_fd].erase_channel(channel_name);
+            
+            // remove operator status
+            channels[channel_name].eraseOperator(clients[client_fd].get_username());
+            channels[channel_name].remove_client(clients[client_fd].get_username());
 
+            std::vector<std::string> operators = channels[channel_name].getOperators();
+            for (std::vector<std::string>::iterator it = operators.begin(); it != operators.end(); ++it)
+            {
+                std::cout << "Operator are : " << *it << std::endl;
+            }
             // Check if the channel is empty by iterating through all clients and checking if they are in the channel
             if (channels[channel_name].getUsers().size() == 0)
             {

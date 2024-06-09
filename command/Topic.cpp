@@ -19,7 +19,7 @@ void broadcast_message_to_channel(const std::string &message, const std::string 
 {
     for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
     {
-        if (is_in_channel(channel, clients, it->first) && it->first != client_fd)
+        if (is_in_channel(channel, clients, it->first))
         {
             send(it->first, message.c_str(), message.length(), 0);
         }
@@ -34,12 +34,10 @@ std::string whois_operator(std::map<int, Client> &clients, std::string &channel,
         std::cout << "empty channels" << std::endl;
         return response;
     }
-    std::cout << "crash here" << std::endl;
 
     std::vector<std::string> operators = channels[channel].getOperators();
     for (std::vector<std::string>::iterator it = operators.begin(); it != operators.end(); ++it)
     {
-        std::cout << "crash here 2" << std::endl;
         if (it->compare(clients[client_fd].get_username()) == 0)
         {
             response = clients[client_fd].get_username();
@@ -54,11 +52,11 @@ void execute_topic(int client_fd, std::vector<std::string> &params, std::map<int
 {
         if (params.size() < 1)
         {
+            std::cout << "not enough params" << std::endl;
             std::string err_msg = ":monserver 461 " + clients[client_fd].get_username() + " TOPIC :Not enough parameters\r\n";
             send(client_fd, err_msg.c_str(), err_msg.length(), 0);
             return;
         }
-
         // parcours map to see if channel exists
         int exist = 0;
         for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it)

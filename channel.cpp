@@ -51,10 +51,12 @@ void Channel::addOperator(const std::string& op) {
 }
 
 void Channel::eraseOperator(const std::string& op) {
-    for (std::vector<std::string>::iterator it = operators.begin(); it != operators.end(); ++it) {
+    std::vector<std::string>::iterator it = operators.begin();
+    while (it != operators.end()) {
         if (*it == op) {
-            operators.erase(it);
-            break;
+            it = operators.erase(it);  // Met à jour l'itérateur après l'effacement
+        } else {
+            ++it;  // Passe à l'élément suivant
         }
     }
 }
@@ -82,4 +84,13 @@ void Channel::addUsermode(const std::string& mode, bool value) {
 
 void Channel::setUserLimit(size_t limit) {
     user_limit = limit;
+}
+
+void Channel::remove_client(const std::string& name) {
+    for (std::vector<std::string>::iterator it = users.begin(); it != users.end(); ++it) {
+        if (*it == name) {
+            users.erase(it);
+            break;
+        }
+    }
 }
