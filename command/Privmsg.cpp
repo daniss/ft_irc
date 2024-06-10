@@ -26,7 +26,7 @@ void broadcast_privmsg_to_channel(const std::string &message, const std::string 
     }
 }
 
-void handle_privmsg(int client_fd, std::string &command, std::vector<std::string> &params, std::map<int, Client> &clients)
+void handle_privmsg(int client_fd, std::string &command, std::vector<std::string> &params, std::map<int, Client> &clients, std::map<std::string, Channel> &channels)
 {
     std::cout << "handle_privmsg" << std::endl;
     if (params.size() < 2) {
@@ -35,8 +35,14 @@ void handle_privmsg(int client_fd, std::string &command, std::vector<std::string
         return;
     }
 
-    if (params[0][0] != '#' || params[1][0] != ':') {
+    std::map<std::string, Channel>::iterator find = channels.find(params[0]);
+    if (params[1][0] != ':' && (find_fd_username(params[0], clients) != -1 || find != channels.end())) { //check if user/channel exists in map clients and channel
         std::string err_msg = ":monserver 401 " + clients[client_fd].get_username() + " PRIVMSG " + params[0] + " :No such nick/channel\r\n";
+        send(client_fd, err_msg.c_str(), err_msg.length(), 0);
+        return;
+    }
+    if (params[1].length() == 1) {
+        std::string err_msg = ":monserver 412 " + clients[client_fd].get_username() + " PRIVMSG :No text to send\r\n";
         send(client_fd, err_msg.c_str(), err_msg.length(), 0);
         return;
     }

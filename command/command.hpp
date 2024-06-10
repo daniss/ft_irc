@@ -13,7 +13,7 @@ void pass_execute(std::vector<std::string> &params, int client_fd, std::map<int,
 void nick_execute(std::vector<std::string> &params, int client_fd, std::map<int, Client> &clients, std::map<std::string, Channel> &channels);
 int check_if_already_exists(std::string &username, std::map<int, Client> &clients);
 void user_execute(std::vector<std::string> &params, int client_fd, std::map<int, Client> &clients);
-void handle_privmsg(int client_fd, std::string &command, std::vector<std::string> &params, std::map<int, Client> &clients);
+void handle_privmsg(int client_fd, std::string &command, std::vector<std::string> &params, std::map<int, Client> &clients, std::map<std::string, Channel> &channels);
 void broadcast_privmsg_to_channel(const std::string &message, const std::string &channel, int client_fd, std::map<int, Client> &clients);
 void part_execute(std::vector<std::string> &params, int client_fd, std::map<int, Client> &clients, std::map<std::string, Channel> &channels);
 void execute_kick(std::vector<std::string> &params, int client_fd, std::map<int, Client> &clients, std::map<std::string, Channel> &channels);

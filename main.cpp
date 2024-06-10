@@ -7,7 +7,7 @@
 #include <sys/socket.h> // Add missing include directive
 #include <netinet/in.h>
 #include <errno.h>
-
+#include <signal.h>
 
 int check_args(int ac, char **av)
 {
@@ -31,6 +31,7 @@ int check_args(int ac, char **av)
     return 0;
 }
 
+
 int main(int ac, char **av)
 {
     if (check_args(ac, av) == 1)
@@ -39,6 +40,8 @@ int main(int ac, char **av)
     }
     std::string password = av[2];
     Server server(std::atoi(av[1]), password);
-
+    
+    //Server *monserver = new Server(std::atoi(av[1]), password);
+    //signal(SIGINT, cleanup);
 }
 

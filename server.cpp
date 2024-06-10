@@ -9,7 +9,14 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <vector>
+#include <signal.h>
 
+bool	interrupted = false;
+
+void	interupte(int sig)
+{
+    interrupted = true;
+}
 
 Server::Server(int port, const std::string& password) : port(port), password(password) {
     create_server();
@@ -20,10 +27,16 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
     server_pollfd.events = POLLIN;
     server_pollfd.revents = 0;
     fds.push_back(server_pollfd);
+    signal(SIGINT, interupte);
 
-    while (true) {
+    while (!interrupted) {
         int poll_count = poll(&fds[0], fds.size(), 0);
         if (poll_count < 0) {
+            if (interrupted)
+            {
+                std::cout << "Server Stopped by CTRL+C" << std::endl;
+                break;
+            }
             std::cerr << "Poll Failed" << std::endl;
             break;
         }
@@ -57,7 +70,6 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
                 else
                 {
                     char buffer[1024];
-                    //int valread = recv(fds[i].fd, buffer, sizeof(buffer), 0);
                     int stoped = 0;
                     std::string received_data;
                     while (true) {
@@ -84,33 +96,12 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
                                 break;
                             }
                             
-                            // Trim the buffer to remove trailing newline
                         }
                     }
                     if (stoped == 1) {
                         continue;
                     }
                     handle_client_message(fds[i].fd, received_data);
-                    
-                    // if (valread <= 0) {
-                    //     if (valread == 0) {
-                    //         std::cout << "Client disconnected" << std::endl;
-                    //     } else {
-                    //         std::cerr << "Read Failed" << std::endl;
-                    //     }
-                    //     close(fds[i].fd);
-                    //     clients.erase(fds[i].fd); // Remove client from map
-                    //     fds.erase(fds.begin() + i);
-                    //     --i;
-                    // } else {
-                    //     buffer[valread] = '\0';
-
-                    //     // Trim the buffer to remove trailing newline
-
-                    //     std::string received_data(buffer);
-                    //     handle_client_message(fds[i].fd, received_data);
-                        
-                    //     }
                     }
                 }
             }
@@ -270,49 +261,12 @@ void Server::execute_command(const std::string &command, int client_fd, std::vec
         nick_execute(params, client_fd, this->clients, this->channels);
     } else if (command_upper == "USER") {
         user_execute(params, client_fd, this->clients);
-    } else if (clients[client_fd].get_is_registered() == false && command_upper != "CAP LS 302") {
+    } else if (clients[client_fd].get_is_registered() == false && command_upper != "CAP") {
         const char *response = ":monserver 451 * :You have not registered\r\n";
-        std::cout << "command : " << command_upper << std::endl;
+        std::cout << "command not registered : " << command_upper << std::endl;
         send(client_fd, response, strlen(response), 0);
     }
     else if (command_upper == "JOIN") {
-        // size_t pos = 0;
-        // std::string token;
-        // std::string delimiter = ",";
-        // int in = 0;
-        // while ((pos = params[0].find(delimiter)) != std::string::npos) {
-        //     token = params[0].substr(0, pos);
-        //     std::vector<std::string> true_params;
-        //     true_params.push_back(token);
-        //     if (params.size() == 2)
-        //     {
-        //         size_t pos2 = params[1].find(delimiter);
-        //         std::string token2 = params[1].substr(0, pos2);
-        //         true_params.push_back(token2);
-        //         join_execute(client_fd, true_params, this->channels, this->clients);
-        //         if (pos2 != std::string::npos)
-        //         {
-        //             params[1].erase(0, pos2 + delimiter.length());
-        //         }
-        //         else {
-        //             params.erase(params.begin() + 1);
-        //         }
-
-        //     }
-        //     else {
-        //         if (params.size() > 1) {
-        //             params.erase(params.begin() + 1);
-        //         }
-        //         join_execute(client_fd, true_params, this->channels, this->clients);
-        //     }
-        //     params[0].erase(0, pos + delimiter.length());
-        //     in = 1;
-        // }
-        // if (params.size() > 1 && in == 1)
-        // {
-        //         params.erase(params.begin() + 1);
-        // }
-        // create a map with the name of the channel to join and the password where param[0] is the name of the channel and param[1] is the password
         std::map<std::string, std::string> channels_to_join;
         size_t pos = 0;
         std::string token;
@@ -351,7 +305,7 @@ void Server::execute_command(const std::string &command, int client_fd, std::vec
         close(client_fd);
         clients.erase(client_fd);
     } else if (command_upper == "PRIVMSG") {
-        handle_privmsg(client_fd, command_upper, params, this->clients);
+        handle_privmsg(client_fd, command_upper, params, this->clients, this->channels);
     } else if (command_upper == "PART") {
         part_execute(params, client_fd, this->clients, this->channels);
     } else if (command_upper == "KICK") {
