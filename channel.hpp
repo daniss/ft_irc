@@ -42,6 +42,7 @@ public:
     void addUsermode(const std::string& mode, bool value);
     void setUserLimit(size_t limit);
     void remove_client(const std::string& name);
+    void remove_channel(const std::string& name);
 
 };
 

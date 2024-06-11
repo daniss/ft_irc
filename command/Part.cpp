@@ -31,11 +31,6 @@ void part_execute(std::vector<std::string> &params, int client_fd, std::map<int,
             channels[channel_name].eraseOperator(clients[client_fd].get_username());
             channels[channel_name].remove_client(clients[client_fd].get_username());
 
-            std::vector<std::string> operators = channels[channel_name].getOperators();
-            for (std::vector<std::string>::iterator it = operators.begin(); it != operators.end(); ++it)
-            {
-                std::cout << "Operator are : " << *it << std::endl;
-            }
             // Check if the channel is empty by iterating through all clients and checking if they are in the channel
             if (channels[channel_name].getUsers().size() == 0)
             {

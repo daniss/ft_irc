@@ -63,8 +63,6 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
                         
                         struct sockaddr_in addr;
                         socklen_t addr_len = sizeof(addr);
-                        // getpeername(new_socket, (struct sockaddr*)&addr, &addr_len);
-                        // clients[new_socket].set_hostname(inet_ntoa(addr.sin_addr));
                     }
                 }
                 else
@@ -238,12 +236,11 @@ void Server::cleanup_user(int client_fd)
     std::deque<std::string> channels_client = clients[client_fd].get_channels();
     for (std::deque<std::string>::iterator it = channels_client.begin(); it != channels_client.end(); ++it)
     {
-        std::string part_msg = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + " PART :" + *it + "\r\n";
-        broadcast_left_message_to_channel(part_msg, *it, client_fd);
-        if (channels[*it].getUsers().empty()) 
-        {
-            channels.erase(*it);
-        }
+        //std::string part_msg = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + " PART :" + *it + "\r\n";
+        //broadcast_left_message_to_channel(part_msg, *it, client_fd);
+        std::vector<std::string> params;
+        params.push_back(*it);
+        part_execute(params, client_fd, clients, channels);
     }
     clients.erase(client_fd);
 }
@@ -269,7 +266,7 @@ void Server::execute_command(const std::string &command, int client_fd, std::vec
         send(client_fd, response, strlen(response), 0);
     }
     else if (command_upper == "JOIN") {
-        if (params.size() != 1) {
+        if (params.size() < 1) {
             // Not enough parameters
             const char *response = ":monserver 461 * JOIN :Not enough parameters\r\n";
             send(client_fd, response, strlen(response), 0);
