@@ -22,7 +22,6 @@ void broadcast_message_join_to_channel(const std::string &message, const std::st
 
 void join_execute(int client_fd, std::vector<std::string> &params, std::map<std::string, Channel> &channels, std::map<int, Client> &clients)
 {
-    std::cout << clients[client_fd].get_username() << " is joining the channel " << params[0] << std::endl;
     if (params[0][0] != '#')
     {
         std::string err_msg = ":monserver 403 " + clients[client_fd].get_username() + " JOIN " + params[0] + " :No such channel\r\n";

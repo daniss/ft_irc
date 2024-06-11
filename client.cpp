@@ -11,9 +11,19 @@ Client::~Client()
 void Client::join_channel(const std::string &channel)
 {
     channels.push_back(channel);
-    // erase invitation after joining
     if (!invited_channels.empty())
-        invited_channels.pop_back();
+    {
+        for (std::deque<std::string>::iterator it = invited_channels.begin(); it != invited_channels.end(); ++it)
+        {
+            if (it->compare(channel) == 0)
+            {
+                invited_channels.erase(it);
+                break;
+            }
+        }
+    }
+   // if (!invited_channels.empty())
+   //     invited_channels.pop_back();
 }
 
 void Client::set_username(const std::string &username)

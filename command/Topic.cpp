@@ -108,7 +108,6 @@ void execute_topic(int client_fd, std::vector<std::string> &params, std::map<int
                 send(client_fd, err_msg.c_str(), err_msg.length(), 0);
                 return;
             }
-            std::cout << "is locked : " << channels[channel].getUserModes()["topic_lock"] << std::endl;
             if (channels[channel].getUserModes()["topic_lock"] == 1 && whois_operator(clients, channel, client_fd, channels).compare(clients[client_fd].get_username()) != 0)
             {
                 std::string err_msg = ":monserver 482 " + clients[client_fd].get_username() + " TOPIC :You're not channel operator\r\n";
