@@ -14,7 +14,7 @@ private:
     std::string realname;
     int client_fd;
     std::string recv_buffer;
-    std::string hostname;
+    //std::string hostname;
 
 public:
     Client();
@@ -33,8 +33,8 @@ public:
     // Setters
     void set_username(const std::string &username);
     void set_is_authenticated(bool is_authenticated);
-    void set_hostname(const std::string &hostname);
-    std::string get_hostname();
+    //void set_hostname(const std::string &hostname);
+    //std::string get_hostname();
     void add_invited_channel(const std::string &channel);
     void add_channel(const std::string &channel);
     void set_is_registered(bool is_registered);

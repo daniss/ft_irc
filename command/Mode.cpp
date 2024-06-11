@@ -43,14 +43,38 @@ void handle_mode_command(int client_fd, const std::vector<std::string>& params, 
         char mode = mode_changes[i];
         switch (mode) {
             case 'i':
-                channel.addUsermode("invite_only", adding_mode);
-                response_mode = ":monserver 324 " + clients[client_fd].get_username() + " " + channel_name + " +i\r\n";
-                send(client_fd, response_mode.c_str(), response_mode.length(), 0);
+                if (params.size() != 2) {
+                    // Not enough parameters
+                    std::string response = ":monserver 461 " + clients[client_fd].get_username() + " MODE :Not enough parameters\r\n";
+                    send(client_fd, response.c_str(), response.length(), 0);
+                    return;
+                }
+                if (adding_mode) {
+                    channel.addUsermode("invite_only", adding_mode);
+                    response_mode = ":monserver 324 " + clients[client_fd].get_username() + " " + channel_name + " +i\r\n";
+                    send(client_fd, response_mode.c_str(), response_mode.length(), 0);
+                } else {
+                    channel.addUsermode("invite_only", adding_mode);
+                    response_mode = ":monserver 324 " + clients[client_fd].get_username() + " " + channel_name + " -i\r\n";
+                    send(client_fd, response_mode.c_str(), response_mode.length(), 0);
+                }
                 break;
             case 't':
-                channel.addUsermode("topic_lock", adding_mode);
-                response_mode = ":monserver 324 " + clients[client_fd].get_username() + " " + channel_name + " +t\r\n";
-                send(client_fd, response_mode.c_str(), response_mode.length(), 0);
+                if (params.size() != 2) {
+                    // Not enough parameters
+                    std::string response = ":monserver 461 " + clients[client_fd].get_username() + " MODE :Not enough parameters\r\n";
+                    send(client_fd, response.c_str(), response.length(), 0);
+                    return;
+                }
+                if (adding_mode) {
+                    channel.addUsermode("topic_lock", adding_mode);
+                    response_mode = ":monserver 324 " + clients[client_fd].get_username() + " " + channel_name + " +t\r\n";
+                    send(client_fd, response_mode.c_str(), response_mode.length(), 0);
+                } else {
+                    channel.addUsermode("topic_lock", adding_mode);
+                    response_mode = ":monserver 324 " + clients[client_fd].get_username() + " " + channel_name + " -t\r\n";
+                    send(client_fd, response_mode.c_str(), response_mode.length(), 0);
+                }
                 break;
             case 'k':
                 if (params.size() < 3) {
@@ -74,11 +98,13 @@ void handle_mode_command(int client_fd, const std::vector<std::string>& params, 
                 }
                 if (adding_mode) {
                     channel.addOperator(mode_param);
-                    std::string response = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + "@" + clients[client_fd].get_hostname() + " MODE " + channel_name + " +o " + params[2] + "\r\n";
+                    std::string response = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + "@localhost" + " MODE " + channel_name + " +o " + params[2] + "\r\n";
                     broadcast_message_to_channel(response, channel_name, client_fd, clients);
-                    std::cout << response;
                 } else {
                     channel.eraseOperator(mode_param);
+                    std::string response = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + "@localhost" + " MODE " + channel_name + " -o " + params[2] + "\r\n";
+                    broadcast_message_to_channel(response, channel_name, client_fd, clients);
+                    std::cout << response << std::endl;
                 }
                 break;
             case 'l':

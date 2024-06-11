@@ -63,8 +63,8 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
                         
                         struct sockaddr_in addr;
                         socklen_t addr_len = sizeof(addr);
-                        getpeername(new_socket, (struct sockaddr*)&addr, &addr_len);
-                        clients[new_socket].set_hostname(inet_ntoa(addr.sin_addr));
+                        // getpeername(new_socket, (struct sockaddr*)&addr, &addr_len);
+                        // clients[new_socket].set_hostname(inet_ntoa(addr.sin_addr));
                     }
                 }
                 else
@@ -261,12 +261,20 @@ void Server::execute_command(const std::string &command, int client_fd, std::vec
         nick_execute(params, client_fd, this->clients, this->channels);
     } else if (command_upper == "USER") {
         user_execute(params, client_fd, this->clients);
-    } else if (clients[client_fd].get_is_registered() == false && command_upper != "CAP") {
+    } else if (command_upper == "CAP") {
+        std::cout << "CAP command" << std::endl;
+    } else if (clients[client_fd].get_is_registered() == false) {
         const char *response = ":monserver 451 * :You have not registered\r\n";
         std::cout << "command not registered : " << command_upper << std::endl;
         send(client_fd, response, strlen(response), 0);
     }
     else if (command_upper == "JOIN") {
+        if (params.size() != 1) {
+            // Not enough parameters
+            const char *response = ":monserver 461 * JOIN :Not enough parameters\r\n";
+            send(client_fd, response, strlen(response), 0);
+            return;
+        }
         std::map<std::string, std::string> channels_to_join;
         size_t pos = 0;
         std::string token;

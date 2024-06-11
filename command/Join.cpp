@@ -128,12 +128,6 @@ void join_execute(int client_fd, std::vector<std::string> &params, std::map<std:
             mode_params.push_back("+o");
             mode_params.push_back(clients[client_fd].get_username());
 
-            //parcours vector and print
-            for (std::vector<std::string>::iterator it = mode_params.begin(); it != mode_params.end(); ++it)
-            {
-                std::cout << "Params : " << *it << std::endl;
-            }
-
             handle_mode_command(client_fd, mode_params, channels, clients);
         }
         // Send the list of users in the channel
@@ -141,13 +135,14 @@ void join_execute(int client_fd, std::vector<std::string> &params, std::map<std:
         std::vector<std::string> users = channels[channel_name].getUsers();
         for (std::vector<std::string>::iterator it = users.begin(); it != users.end(); ++it)
         {
-            if (whois_operator(clients, channel_name, client_fd, channels).compare(clients[client_fd].get_username()) == 0)
+            if (whois_operator(clients, channel_name, find_fd_username(*it, clients), channels).compare(*it) == 0)
             {
                 response += "@" + *it + " ";
                 std::cout << "Operator : " << *it << std::endl;
             }
             else
             {
+                std::cout << "User : " << *it << std::endl;
                 response += *it + " ";
             }
         }

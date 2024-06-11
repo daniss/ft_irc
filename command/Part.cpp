@@ -18,7 +18,7 @@ void part_execute(std::vector<std::string> &params, int client_fd, std::map<int,
         if (is_in_channel(channel_name, clients, client_fd))
         {
             // Create the PART message
-            std::string part_msg = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_username() + "@hostname PART :" + channel_name + "\r\n";
+            std::string part_msg = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_username() + "@localhost PART :" + channel_name + "\r\n";
             
             // Broadcast the PART message to other clients in the channel
             broadcast_message_to_channel(part_msg, channel_name, client_fd, clients);
