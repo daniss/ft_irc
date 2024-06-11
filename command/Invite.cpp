@@ -85,8 +85,6 @@ void invite_execute(std::vector<std::string> &params, int fd, std::map<int, Clie
 
     
     
-    int invited = 0;
-    //std::string invite_msg = ":" + clients[fd].username + "!" + clients[fd].realname + " INVITE " + target + " " + channel + "\r\n";
     std::string msg = ":monserver 341 " + clients[fd].get_username() + " INVITE " + target + " " + channel + "\r\n";
     for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
     {

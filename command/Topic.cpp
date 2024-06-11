@@ -21,7 +21,8 @@ void broadcast_message_to_channel(const std::string &message, const std::string 
     {
         if (is_in_channel(channel, clients, it->first))
         {
-            send(it->first, message.c_str(), message.length(), 0);
+            if (it->first != client_fd)
+                send(it->first, message.c_str(), message.length(), 0);
         }
     }
 }

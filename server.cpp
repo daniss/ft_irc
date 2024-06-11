@@ -15,6 +15,7 @@ bool	interrupted = false;
 
 void	interupte(int sig)
 {
+    (void)sig;
     interrupted = true;
 }
 
@@ -61,8 +62,6 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
                         clients[new_socket] = Client(); // Initialize client
                         clients[new_socket].set_client_fd(new_socket);
                         
-                        struct sockaddr_in addr;
-                        socklen_t addr_len = sizeof(addr);
                     }
                 }
                 else
@@ -310,7 +309,7 @@ void Server::execute_command(const std::string &command, int client_fd, std::vec
         close(client_fd);
         clients.erase(client_fd);
     } else if (command_upper == "PRIVMSG") {
-        handle_privmsg(client_fd, command_upper, params, this->clients, this->channels);
+        handle_privmsg(client_fd, params, this->clients, this->channels);
     } else if (command_upper == "PART") {
         part_execute(params, client_fd, this->clients, this->channels);
     } else if (command_upper == "KICK") {

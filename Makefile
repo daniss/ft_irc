@@ -2,7 +2,7 @@
 CXX = c++
 
 # Compiler flags
-CXXFLAGS = -std=c++98 #-Wall -Wextra -Werror 
+CXXFLAGS = -std=c++98 -Wall -Wextra -Werror 
 
 # Target executable
 TARGET = ircserv

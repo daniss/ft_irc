@@ -11,7 +11,7 @@
 #include <vector>
 #include "command.hpp"
 
-void broadcast_message_join_to_channel(const std::string &message, const std::string &channel, int client_fd, std::map<int, Client> &clients)
+void broadcast_message_join_to_channel(const std::string &message, const std::string &channel, std::map<int, Client> &clients)
 {
     for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
     {
@@ -22,7 +22,6 @@ void broadcast_message_join_to_channel(const std::string &message, const std::st
 
 void join_execute(int client_fd, std::vector<std::string> &params, std::map<std::string, Channel> &channels, std::map<int, Client> &clients)
 {
-    int i = 0;
     std::cout << clients[client_fd].get_username() << " is joining the channel " << params[0] << std::endl;
     if (params[0][0] != '#')
     {
@@ -113,7 +112,7 @@ void join_execute(int client_fd, std::vector<std::string> &params, std::map<std:
         std::string join_msg = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + " JOIN :" + channel_name + "\r\n";
         channels[channel_name].addUser(clients[client_fd].get_username());
         std::cout << join_msg << std::endl;
-        broadcast_message_join_to_channel(join_msg, channel_name, client_fd, clients);
+        broadcast_message_join_to_channel(join_msg, channel_name, clients);
         
         if (channels[channel_name].getTopic().empty() == false)
         {

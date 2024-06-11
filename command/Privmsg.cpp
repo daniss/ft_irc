@@ -26,9 +26,8 @@ void broadcast_privmsg_to_channel(const std::string &message, const std::string 
     }
 }
 
-void handle_privmsg(int client_fd, std::string &command, std::vector<std::string> &params, std::map<int, Client> &clients, std::map<std::string, Channel> &channels)
+void handle_privmsg(int client_fd, std::vector<std::string> &params, std::map<int, Client> &clients, std::map<std::string, Channel> &channels)
 {
-    std::cout << "handle_privmsg" << std::endl;
     if (params.size() < 2) {
         std::string err_msg = ":monserver 461 " + clients[client_fd].get_username() + " PRIVMSG :Not enough parameters\r\n";
         send(client_fd, err_msg.c_str(), err_msg.length(), 0);
