@@ -33,6 +33,8 @@ public:
     // Setters
     void addOperator(const std::string& op);
     void eraseOperator(const std::string& op);
+    void changeOperator(const std::string& old_op, const std::string& new_op);
+    void changeUser(const std::string& old_user, const std::string& new_user);
     
     void setChannelName(const std::string& name);
     void setKey(const std::string& key);

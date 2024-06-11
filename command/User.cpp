@@ -15,6 +15,26 @@ void user_execute(std::vector<std::string> &params, int client_fd, std::map<int,
         if (realname[0] == ':') {
             realname.erase(0, 1);
         }
+        // parcours clients to check if username already exists
+        if (clients[client_fd].get_username().empty())
+        {
+            for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+            {
+                if (it->second.get_username().compare(params[0]) == 0)
+                {
+                    const char *response = ":monserver 462 * :You may not reregister\r\n";
+                    send(client_fd, response, strlen(response), 0);
+                    return;
+                }
+
+                if (it->second.get_realname().compare(realname) == 0)
+                {
+                    const char *response = ":monserver 462 * :You may not reregister\r\n";
+                    send(client_fd, response, strlen(response), 0);
+                    return;
+                }
+            }
+        }
         clients[client_fd].set_username(params[0]);
         clients[client_fd].set_realname(realname);
         if (clients[client_fd].get_is_authenticated() && !clients[client_fd].get_username().empty()) {

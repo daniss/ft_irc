@@ -69,7 +69,6 @@ void join_execute(int client_fd, std::vector<std::string> &params, std::map<std:
         {
             Channel cha;
             cha.setChannelName(channel_name);
-            cha.addOperator(clients[client_fd].get_username());
             if (params.size() == 2)
             {
                 std::cout << "password : " << params[1] << std::endl;

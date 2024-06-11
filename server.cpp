@@ -325,9 +325,5 @@ void Server::execute_command(const std::string &command, int client_fd, std::vec
     } else if (command_upper == "MODE") {
         handle_mode_command(client_fd, params, this->channels, this->clients);
     }
-    else {
-        std::cerr << "Unknown command : " << command_upper << std::endl;
-    }
-
 }
 

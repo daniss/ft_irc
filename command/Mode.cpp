@@ -29,7 +29,7 @@ void handle_mode_command(int client_fd, const std::vector<std::string>& params, 
     std::string mode_changes = params[1];
     std::string mode_param = (params.size() > 2) ? params[2] : "";
 
-    if (whois_operator(clients, channel_name, client_fd, channels).compare(clients[client_fd].get_username()) != 0) {
+    if (whois_operator(clients, channel_name, client_fd, channels).compare(clients[client_fd].get_username()) != 0 && channels[channel_name].getUsers().size() != 1) {
         // You're not an operator
         std::string response = ":monserver 482 " + clients[client_fd].get_username() + " " + params[0] + " :You're not a channel operator\r\n";
         send(client_fd, response.c_str(), response.length(), 0);
@@ -97,6 +97,7 @@ void handle_mode_command(int client_fd, const std::vector<std::string>& params, 
                     return;
                 }
                 if (adding_mode) {
+                    std::cout << "Adding operator" << std::endl;
                     channel.addOperator(mode_param);
                     std::string response = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + "@localhost" + " MODE " + channel_name + " +o " + params[2] + "\r\n";
                     broadcast_message_to_channel(response, channel_name, client_fd, clients);

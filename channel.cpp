@@ -94,3 +94,21 @@ void Channel::remove_client(const std::string& name) {
         }
     }
 }
+
+void Channel::changeOperator(const std::string& old_op, const std::string& new_op) {
+    for (std::vector<std::string>::iterator it = operators.begin(); it != operators.end(); ++it) {
+        if (*it == old_op) {
+            *it = new_op;
+            break;
+        }
+    }
+}
+
+void Channel::changeUser(const std::string& old_user, const std::string& new_user) {
+    for (std::vector<std::string>::iterator it = users.begin(); it != users.end(); ++it) {
+        if (*it == old_user) {
+            *it = new_user;
+            break;
+        }
+    }
+}

@@ -11,6 +11,7 @@
 #include <vector>
 #include "../client.hpp"
 #include "../channel.hpp"
+#include "command.hpp"
 
 int check_if_already_exists(std::string &username, std::map<int, Client> &clients)
 {
@@ -45,20 +46,29 @@ void nick_execute(std::vector<std::string> &params, int client_fd, std::map<int,
             std::string nick_change_msg = ":" + clients[client_fd].get_username() + "!new_nick@" + "monserver" + " NICK :" + params[0] + "\r\n";
             send(client_fd, nick_change_msg.c_str(), nick_change_msg.length(), 0);
         }
-        // parcours map chanel et change le nom de l'opérateur
+        // parcours map chanel et change le nom de l'opérateur et change vector user
         for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
         {
-            std::vector<std::string> opera = it->second.getOperators();
-            for (std::vector<std::string>::iterator it2 = opera.begin(); it2 != opera.end(); ++it2)
+
+            std::vector<std::string> users = it->second.getUsers();
+            for (std::vector<std::string>::iterator it2 = users.begin(); it2 != users.end(); ++it2)
             {
                 if (it2->compare(clients[client_fd].get_username()) == 0)
                 {
-                    *it2 = params[0];
+                    //*it2 = params[0];
+                    it->second.changeUser(clients[client_fd].get_username(), params[0]);
+                    std::string chan = it->first;
+                    if (whois_operator(clients, chan, client_fd, channels).compare(clients[client_fd].get_username()) == 0)
+                    {
+                        it->second.changeOperator(clients[client_fd].get_username(), params[0]);
+                    }
                 }
             }
+            // std::vector<std::string> users = it->second.getUsers();
         }
         clients[client_fd].set_username(params[0]);
-        // Change all the operator names in the channels
+
+        
     } 
     else
     {
