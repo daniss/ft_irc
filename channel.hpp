@@ -17,7 +17,6 @@ private:
     size_t user_limit;
 
 public:
-    Channel(std::string &name, std::string &key, std::string &topic);
     Channel();
     ~Channel();
 

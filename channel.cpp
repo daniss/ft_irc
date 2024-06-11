@@ -1,10 +1,5 @@
 #include "channel.hpp"
 
-Channel::Channel(std::string &name, std::string &key, std::string &topic) : chan_name(name), key(key), topic(topic)
-{
-}
-
-
 Channel::Channel()
 {
     user_modes["topic_lock"] = false;
