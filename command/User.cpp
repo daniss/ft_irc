@@ -35,7 +35,6 @@ void user_execute(std::vector<std::string> &params, int client_fd, std::map<int,
                 }
             }
         }
-        clients[client_fd].set_username(params[0]);
         clients[client_fd].set_realname(realname);
         if (clients[client_fd].get_is_authenticated() && !clients[client_fd].get_username().empty()) {
             std::string welcome = ":monserver 001 " + clients[client_fd].get_username() + " :Welcome to the IRC Server\r\n";

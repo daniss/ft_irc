@@ -1,6 +1,15 @@
 #include "command.hpp"
 
-
+void broadcast_message_topic_to_channel(const std::string &message, const std::string &channel, std::map<int, Client> &clients)
+{
+    for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+    {
+        if (is_in_channel(channel, clients, it->first))
+        {
+                send(it->first, message.c_str(), message.length(), 0);
+        }
+    }
+}
 
 int is_in_channel(const std::string &channel, std::map<int, Client> &clients, int client_fd)
 {
@@ -126,7 +135,7 @@ void execute_topic(int client_fd, std::vector<std::string> &params, std::map<int
             }
             std::string topic_msg = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + " TOPIC " + channel + " :" + topic + "\r\n";
             channels[channel].setTopic(topic);
-            broadcast_message_to_channel(topic_msg, channel, client_fd, clients);
+            broadcast_message_topic_to_channel(topic_msg, channel, clients);
         }
     
 }

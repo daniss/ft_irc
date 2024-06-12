@@ -1,5 +1,16 @@
 #include "command.hpp"
 
+void broadcast_message_mode_to_channel(const std::string &message, const std::string &channel, std::map<int, Client> &clients)
+{
+    for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
+    {
+        if (is_in_channel(channel, clients, it->first))
+        {
+                send(it->first, message.c_str(), message.length(), 0);
+        }
+    }
+}
+
 void handle_mode_command(int client_fd, const std::vector<std::string>& params, std::map<std::string, Channel>& channels, std::map<int, Client>& clients) {
     if (params.size() < 2) {
         // Not enough parameters
@@ -100,19 +111,23 @@ void handle_mode_command(int client_fd, const std::vector<std::string>& params, 
                     std::cout << "Adding operator" << std::endl;
                     channel.addOperator(mode_param);
                     std::string response = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + "@localhost" + " MODE " + channel_name + " +o " + params[2] + "\r\n";
-                    broadcast_message_to_channel(response, channel_name, client_fd, clients);
+                    broadcast_message_mode_to_channel(response, channel_name, clients);
                 } else {
                     channel.eraseOperator(mode_param);
                     std::string response = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + "@localhost" + " MODE " + channel_name + " -o " + params[2] + "\r\n";
-                    broadcast_message_to_channel(response, channel_name, client_fd, clients);
+                    broadcast_message_mode_to_channel(response, channel_name, clients);
                     std::cout << response << std::endl;
                 }
                 break;
             case 'l':
                 if (adding_mode) {
                     channel.setUserLimit(std::atoi(mode_param.c_str()));
+                    std::string response = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + "@localhost" + " MODE " + channel_name + " +l " + mode_param + "\r\n";
+                    broadcast_message_mode_to_channel(response, channel_name, clients);
                 } else {
                     channel.setUserLimit(0);
+                    std::string response = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + "@localhost" + " MODE " + channel_name + " -l " + mode_param + "\r\n";
+                    broadcast_message_mode_to_channel(response, channel_name, clients);
                 }
                 break;
             default:

@@ -64,7 +64,6 @@ void nick_execute(std::vector<std::string> &params, int client_fd, std::map<int,
                     }
                 }
             }
-            // std::vector<std::string> users = it->second.getUsers();
         }
         clients[client_fd].set_username(params[0]);
 
