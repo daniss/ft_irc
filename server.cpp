@@ -31,7 +31,7 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
     signal(SIGINT, interupte);
 
     while (!interrupted) {
-        int poll_count = poll(&fds[0], fds.size(), 0);
+        int poll_count = poll(&fds[0], fds.size(), -1);
         if (poll_count < 0) {
             if (interrupted)
             {
@@ -208,11 +208,14 @@ void Server::handle_client_message(int client_fd, const std::string& message)
         }
 
         // Execute the command
-        if (!clients[client_fd].get_username().empty() && !clients[client_fd].get_realname().empty() && clients[client_fd].get_is_authenticated()) {
-            clients[client_fd].set_is_registered(true);
-        }
         std::cout << "command : " << command << std::endl;
         execute_command(command, client_fd, params, command_line);
+        if (clients[client_fd].get_is_authenticated() && !clients[client_fd].get_username().empty() && !clients[client_fd].get_realname().empty() && !clients[client_fd].get_is_connected())
+        {
+            std::string welcome = ":monserver 001 " + clients[client_fd].get_username() + " :Welcome to the IRC Server\r\n";
+            send(client_fd, welcome.c_str(), welcome.length(), 0);
+            clients[client_fd].set_is_connected(true);
+        }
     }
 }
 
@@ -259,7 +262,7 @@ void Server::execute_command(const std::string &command, int client_fd, std::vec
         user_execute(params, client_fd, this->clients);
     } else if (command_upper == "CAP") {
         std::cout << "CAP command" << std::endl;
-    } else if (clients[client_fd].get_is_registered() == false) {
+    } else if (clients[client_fd].get_is_connected() == false) {
         const char *response = ":monserver 451 * :You have not registered\r\n";
         std::cout << "command not registered : " << command_upper << std::endl;
         send(client_fd, response, strlen(response), 0);

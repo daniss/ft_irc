@@ -1,16 +1,5 @@
 #include "command.hpp"
 
-void broadcast_message_kick_to_channel(const std::string &message, const std::string &channel, std::map<int, Client> &clients)
-{
-    for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
-    {
-        if (is_in_channel(channel, clients, it->first))
-        {
-            send(it->first, message.c_str(), message.length(), 0);
-        }
-    }
-}
-
 void execute_kick(std::vector<std::string> &params, int client_fd, std::map<int, Client> &clients, std::map<std::string, Channel> &channels)
 {
     if (params.size() < 2)
@@ -54,7 +43,7 @@ void execute_kick(std::vector<std::string> &params, int client_fd, std::map<int,
     }
     std::string kick_msg = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + " KICK " + channel + " " + target + "\r\n";
     std::cout << clients[client_fd].get_username() << " is kicking " << target << " from the channel " << channel << std::endl;
-    broadcast_message_kick_to_channel(kick_msg, channel, clients);
+    broadcast_message_to_channel(kick_msg, channel, clients);
     // remove client from channel
     channels[channel].remove_client(target);
     // remove channel from client

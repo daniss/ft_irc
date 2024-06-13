@@ -66,13 +66,11 @@ void nick_execute(std::vector<std::string> &params, int client_fd, std::map<int,
             }
         }
         clients[client_fd].set_username(params[0]);
-
-        
     } 
     else
     {
-        const char *response = ":monserver 433 * :Nickname is already in use\r\n";
-        send(client_fd, response, strlen(response), 0);
+        std::string response = ":monserver 433 * " + params[0] + " :Nickname is already in use\r\n";
+        send(client_fd, response.c_str(), response.length(), 0);
     }
 }
 

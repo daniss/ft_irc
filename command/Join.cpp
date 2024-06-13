@@ -11,15 +11,6 @@
 #include <vector>
 #include "command.hpp"
 
-void broadcast_message_join_to_channel(const std::string &message, const std::string &channel, std::map<int, Client> &clients)
-{
-    for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
-    {
-        if (is_in_channel(channel, clients, it->first) == true)
-            send(it->first, message.c_str(), message.length(), 0);
-    }
-}
-
 void join_execute(int client_fd, std::vector<std::string> &params, std::map<std::string, Channel> &channels, std::map<int, Client> &clients)
 {
     if (params[0][0] != '#')
@@ -111,7 +102,7 @@ void join_execute(int client_fd, std::vector<std::string> &params, std::map<std:
         std::string join_msg = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + " JOIN :" + channel_name + "\r\n";
         channels[channel_name].addUser(clients[client_fd].get_username());
         std::cout << join_msg << std::endl;
-        broadcast_message_join_to_channel(join_msg, channel_name, clients);
+        broadcast_message_to_channel(join_msg, channel_name, clients);
         
         if (channels[channel_name].getTopic().empty() == false)
         {

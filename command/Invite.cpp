@@ -85,17 +85,10 @@ void invite_execute(std::vector<std::string> &params, int fd, std::map<int, Clie
 
     
     
-    std::string msg = ":monserver 341 " + clients[fd].get_username() + " INVITE " + target + " " + channel + "\r\n";
-    for (std::map<int, Client>::iterator it = clients.begin(); it != clients.end(); ++it)
-    {
-        std::cout << "client username : " << target << std::endl;
-        if (it->second.get_username().compare(target) == 0)
-        {
-            it->second.add_invited_channel(channel);
-            send(fd, msg.c_str(), msg.length(), 0);
-            std::cout << "invite message sent to " << it->second.get_username() << " for the channel " << channel << " by " << clients[fd].get_username() << std::endl;
-            return;
-        }
-    }
-    
+    std::string msg = ":monserver 341 " + clients[player_fd].get_username() + " " + target + " " + channel + "\r\n";
+    clients[player_fd].add_invited_channel(channel);
+    send(fd, msg.c_str(), msg.length(), 0);
+    msg = ":" + clients[fd].get_username() + " INVITE " + target + " :" + channel + "\r\n";
+    send(player_fd, msg.c_str(), msg.length(), 0);
+    std::cout << "invite message sent to " << clients[player_fd].get_username() << " for the channel " << channel << " by " << clients[fd].get_username() << std::endl;
 }

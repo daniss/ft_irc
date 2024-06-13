@@ -29,11 +29,11 @@ void pass_execute(std::vector<std::string> &params, int client_fd, std::map<int,
     if (!params.empty() && params[0] == password)
     {
         clients[client_fd].set_is_authenticated(true);
-        if (!clients[client_fd].get_realname().empty() || !clients[client_fd].get_username().empty())
-        {
-            const char *response = ":monserver 001 * :Welcome to the Internet Relay Network\r\n";
-            send(client_fd, response, strlen(response), 0);
-        }
+        // if (!clients[client_fd].get_realname().empty() || !clients[client_fd].get_username().empty())
+        // {
+        //     const char *response = ":monserver 001 * :Welcome to the Internet Relay Network\r\n";
+        //     send(client_fd, response, strlen(response), 0);
+        // }
     }
     else
     {

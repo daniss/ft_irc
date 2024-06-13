@@ -15,6 +15,7 @@ private:
     int client_fd;
     std::string recv_buffer;
     //std::string hostname;
+    bool is_connected;
 
 public:
     Client();
@@ -29,9 +30,11 @@ public:
     std::string get_realname() const;
     int get_client_fd() const;
     std::string get_recv_buffer() const;
+    bool get_is_connected() const;
 
     // Setters
     void set_username(const std::string &username);
+    void set_is_connected(bool is_connected);
     void set_is_authenticated(bool is_authenticated);
     //void set_hostname(const std::string &hostname);
     //std::string get_hostname();

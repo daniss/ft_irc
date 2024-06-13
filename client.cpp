@@ -1,6 +1,6 @@
 #include "client.hpp"
 
-Client::Client() : is_authenticated(false), is_registered(false)
+Client::Client() : is_authenticated(false), is_registered(false), is_connected(false)
 {
 }
 
@@ -36,6 +36,11 @@ void Client::set_realname(const std::string &realname)
     this->realname = realname;
 }
 
+void Client::set_is_connected(bool is_connected)
+{
+    this->is_connected = is_connected;
+}
+
 std::string Client::get_username() const
 {
     return username;
@@ -44,6 +49,11 @@ std::string Client::get_username() const
 bool Client::get_is_authenticated() const
 {
     return is_authenticated;
+}
+
+bool Client::get_is_connected() const
+{
+    return is_connected;
 }
 
 std::deque<std::string> Client::get_invited_channels() const
