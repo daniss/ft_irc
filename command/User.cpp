@@ -15,8 +15,6 @@ void user_execute(std::vector<std::string> &params, int client_fd, std::map<int,
         if (realname[0] == ':') {
             realname.erase(0, 1);
         }
-        // parcours clients to check if username already exists
-
         clients[client_fd].set_realname(realname);
     }
     else 
