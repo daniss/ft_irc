@@ -24,6 +24,17 @@ int check_if_already_exists(std::string &username, std::map<int, Client> &client
 }
 
 
+void broadcast_to_all_channel(int client_fd, std::string &response, std::map<int, Client> &clients, std::map<std::string, Channel> &channels)
+{
+    for (std::map<std::string, Channel>::iterator it = channels.begin(); it != channels.end(); ++it)
+    {
+        if (is_in_channel(it->first, clients, client_fd))
+        {
+            broadcast_message_to_channel(response, it->first, clients);
+        }
+    }
+}
+
 void nick_execute(std::vector<std::string> &params, int client_fd, std::map<int, Client> &clients, std::map<std::string, Channel> &channels)
 {
     if (params.empty())
@@ -65,7 +76,10 @@ void nick_execute(std::vector<std::string> &params, int client_fd, std::map<int,
                 }
             }
         }
+        std::string response = ":" + clients[client_fd].get_username() + "!new_nick@" + "monserver" + " NICK :" + params[0] + "\r\n";
         clients[client_fd].set_username(params[0]);
+        // broadcast to all channel where user is
+        broadcast_to_all_channel(client_fd, response, clients, channels);
     } 
     else
     {
