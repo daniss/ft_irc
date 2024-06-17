@@ -15,6 +15,12 @@ void user_execute(std::vector<std::string> &params, int client_fd, std::map<int,
         if (realname[0] == ':') {
             realname.erase(0, 1);
         }
+        if (realname.empty())
+        {
+            const char *response = ":monserver 461 * USER :Not enough parameters\r\n";
+            send(client_fd, response, strlen(response), 0);
+            return;
+        }
         clients[client_fd].set_realname(realname);
     }
     else 

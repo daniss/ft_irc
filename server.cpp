@@ -165,7 +165,6 @@ void Server::handle_client_message(int client_fd, const std::string& message)
     while ((pos = clients[client_fd].get_recv_buffer().find('\n')) != std::string::npos) {
         // Extract complete command from the buffer
         std::string command_line = clients[client_fd].get_recv_buffer().substr(0, pos);
-        //[client_fd].recv_buffer.erase(0, pos + 1); // Remove the processed command from the buffer
         clients[client_fd].erase_recv_buffer(pos + 1); // Remove the processed command from the buffer
 
         // Parse the command and parameters
@@ -225,8 +224,6 @@ void Server::cleanup_user(int client_fd)
     std::deque<std::string> channels_client = clients[client_fd].get_channels();
     for (std::deque<std::string>::iterator it = channels_client.begin(); it != channels_client.end(); ++it)
     {
-        //std::string part_msg = ":" + clients[client_fd].get_username() + "!" + clients[client_fd].get_realname() + " PART :" + *it + "\r\n";
-        //broadcast_left_message_to_channel(part_msg, *it, client_fd);
         std::vector<std::string> params;
         params.push_back(*it);
         part_execute(params, client_fd, clients, channels);
