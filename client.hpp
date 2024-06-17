@@ -14,7 +14,6 @@ private:
     std::string realname;
     int client_fd;
     std::string recv_buffer;
-    //std::string hostname;
     bool is_connected;
 
 public:

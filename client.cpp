@@ -22,8 +22,7 @@ void Client::join_channel(const std::string &channel)
             }
         }
     }
-   // if (!invited_channels.empty())
-   //     invited_channels.pop_back();
+
 }
 
 void Client::set_username(const std::string &username)
@@ -132,13 +131,3 @@ void Client::erase_channel(const std::string &channel)
         }
     }
 }
-
-// void Client::set_hostname(const std::string &hostname)
-// {
-//     this->hostname = hostname;
-// }
-
-// std::string Client::get_hostname()
-// {
-//     return hostname;
-// }

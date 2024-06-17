@@ -59,7 +59,7 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
                         client_pollfd.events = POLLIN;
                         client_pollfd.revents = 0;
                         fds.push_back(client_pollfd);
-                        clients[new_socket] = Client(); // Initialize client
+                        clients[new_socket] = Client();
                         clients[new_socket].set_client_fd(new_socket);
                         
                     }
@@ -81,7 +81,7 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
                                 std::cerr << "Read Failed" << std::endl;
                             }
                             close(fds[i].fd);
-                            clients.erase(fds[i].fd); // Remove client from map
+                            clients.erase(fds[i].fd);
                             fds.erase(fds.begin() + i);
                             --i;
                             stoped = 1;
@@ -111,19 +111,6 @@ Server::Server(int port, const std::string& password) : port(port), password(pas
 }
 Server::~Server() {
     close(this->server_fd);
-}
-
-void Server::accept_connections() {
-    this->addrlen = sizeof(this->address);
-    while (true) {
-        int new_socket = accept(this->server_fd, (struct sockaddr *)&this->address, &this->addrlen);
-        if (new_socket < 0) {
-            std::cerr << "Accept Failed" << std::endl;
-            continue;
-        }
-        std::cout << "Connection Accepted" << std::endl;
-        close(new_socket);  // Close the new socket immediately as we are not handling messages
-    }
 }
 
 void Server::create_server() {
